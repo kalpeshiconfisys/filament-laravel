@@ -20,7 +20,6 @@ use Filament\Widgets;
 
 
 
-
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
@@ -28,6 +27,7 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->id('admin')
             ->path('admin') // IMPORTANT
+            ->default()
             ->login()
             ->colors([
                 'primary' => Color::Amber,

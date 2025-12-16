@@ -65,16 +65,16 @@ class UserResource extends Resource
             ->actions([
                 // 👁 View – permission based
                 Tables\Actions\ViewAction::make()
-                    ->visible(fn () => auth()->user()?->can('view users') ?? false),
+                    ->visible(fn () => auth()->user()?->can('view_users') ?? false),
 
                 // ✏ Edit – permission based
                 Tables\Actions\EditAction::make()
-                    ->visible(fn () => auth()->user()?->can('edit users') ?? false),
+                    ->visible(fn () => auth()->user()?->can('edit_users') ?? false),
 
                 // 🗑 Delete – permission + self delete block
                 Tables\Actions\DeleteAction::make()
                     ->visible(fn ($record) =>
-                        auth()->user()?->can('delete users')
+                        auth()->user()?->can('delete_users')
                         && auth()->id() !== $record->id
                     ),
                 ]);

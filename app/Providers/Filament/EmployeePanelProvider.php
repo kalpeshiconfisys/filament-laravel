@@ -26,6 +26,7 @@ class EmployeePanelProvider extends PanelProvider
             ->id('employee')
             ->path('employee')
             ->login()
+            ->default()
             ->colors([
                 'primary' => Color::Amber,
             ])
