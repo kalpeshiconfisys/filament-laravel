@@ -25,7 +25,7 @@ class EditorPanelProvider extends PanelProvider
         return $panel
             ->id('editor')
             ->path('editor')
-             
+
             ->login()
             ->default()
             ->colors([

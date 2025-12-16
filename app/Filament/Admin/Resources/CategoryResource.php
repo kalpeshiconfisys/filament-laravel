@@ -3,21 +3,15 @@
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\CategoryResource\Pages;
-use App\Filament\Admin\Resources\CategoryResource\RelationManagers;
 use App\Models\Category;
 use Filament\Forms;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-
-
-
-
+use Filament\Forms\Components\FileUpload;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 class CategoryResource extends Resource
 {
@@ -25,21 +19,19 @@ class CategoryResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-folder';
     protected static ?string $navigationGroup = 'Content';
-
-
-
     protected static ?string $navigationLabel = 'Category';
-    protected static ?int $navigationSort =1;
+    protected static ?int $navigationSort = 1;
+
+    // 🔥 MOST IMPORTANT
 
 
-    public static function form(Forms\Form $form): Forms\Form
+    public static function form(Form $form): Form
     {
         return $form->schema([
             Forms\Components\TextInput::make('title')
                 ->required()
                 ->live(onBlur: true)
-                ->afterStateUpdated(
-                    fn($state, callable $set) =>
+                ->afterStateUpdated(fn ($state, callable $set) =>
                     $set('slug', Str::slug($state))
                 ),
 
@@ -50,69 +42,47 @@ class CategoryResource extends Resource
             Forms\Components\RichEditor::make('description')
                 ->required(),
 
-
             FileUpload::make('thumbnail')
                 ->image()
-                ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/jpg'])
-                ->maxSize(2048) // optional (2MB)
-                ->required()
                 ->directory('categories')
-                ->visibility('public'),
+                ->visibility('public')
+                ->required(),
 
             Forms\Components\Toggle::make('is_active')
                 ->required(),
 
-            Forms\Components\TextInput::make('canonical_url')
-                ->required(),
-
-            Forms\Components\TextInput::make('meta_title')
-                ->required(),
-
-            Forms\Components\Textarea::make('meta_description')
-                ->required(),
-
-            Forms\Components\Hidden::make('created_by')
-                ->default(auth()->id()),
+            Forms\Components\TextInput::make('canonical_url')->required(),
+            Forms\Components\TextInput::make('meta_title')->required(),
+            Forms\Components\Textarea::make('meta_description')->required(),
         ]);
     }
 
-    public static function table(Tables\Table $table): Tables\Table
+    public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('thumbnail')
-                    ->square(),
+                Tables\Columns\ImageColumn::make('thumbnail')->square(),
 
-                Tables\Columns\TextColumn::make('title')
-                    ->searchable(),
+                Tables\Columns\TextColumn::make('title')->searchable(),
 
                 Tables\Columns\TextColumn::make('creator.name')
                     ->label('Created By')
-                    ->formatStateUsing(
-                        fn($record) =>
+                    ->formatStateUsing(fn ($record) =>
                         $record->creator->name . '(' . $record->creator->id . ')'
                     ),
 
-                Tables\Columns\IconColumn::make('is_active')
-                    ->label('Status')
-                    ->boolean(),
+                Tables\Columns\IconColumn::make('is_active')->boolean(),
             ])
-             ->actions([
-                // 👁 View – permission based
+            ->actions([
                 Tables\Actions\ViewAction::make()
-                    ->visible(fn () => auth()->user()?->can('view_categories') ?? false),
+                    ->visible(fn () => auth()->user()?->can('view_categories')),
 
-                // ✏ Edit – permission based
                 Tables\Actions\EditAction::make()
-                    ->visible(fn () => auth()->user()?->can('edit_categories') ?? false),
+                    ->visible(fn () => auth()->user()?->can('edit_categories')),
 
-                // 🗑 Delete – permission + self delete block
                 Tables\Actions\DeleteAction::make()
-                    ->visible(fn ($record) =>
-                        auth()->user()?->can('delete_categories ')
-
-                    ),
-                ]);
+                    ->visible(fn () => auth()->user()?->can('delete_categories')),
+            ]);
     }
 
     public static function getPages(): array
@@ -123,6 +93,5 @@ class CategoryResource extends Resource
             'edit' => Pages\EditCategory::route('/{record}/edit'),
         ];
     }
-
 
 }
