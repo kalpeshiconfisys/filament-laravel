@@ -14,14 +14,14 @@ class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-user-circle';
     protected static ?string $navigationGroup = 'User Management';
     protected static ?string $navigationLabel = 'Users';
     protected static ?int $navigationSort = 1;
 
     /**
      * ✅ ROLE BASED SIDEBAR
-     */
+    */
 
 
     /**

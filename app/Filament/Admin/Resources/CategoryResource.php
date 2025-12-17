@@ -16,14 +16,10 @@ use Illuminate\Support\Facades\Auth;
 class CategoryResource extends Resource
 {
     protected static ?string $model = Category::class;
-
-    protected static ?string $navigationIcon = 'heroicon-o-folder';
+    protected static ?string $navigationIcon = 'heroicon-o-archive-box';
     protected static ?string $navigationGroup = 'Content';
     protected static ?string $navigationLabel = 'Category';
     protected static ?int $navigationSort = 1;
-
-    // 🔥 MOST IMPORTANT
-
 
     public static function form(Form $form): Form
     {
@@ -31,7 +27,8 @@ class CategoryResource extends Resource
             Forms\Components\TextInput::make('title')
                 ->required()
                 ->live(onBlur: true)
-                ->afterStateUpdated(fn ($state, callable $set) =>
+                ->afterStateUpdated(
+                    fn($state, callable $set) =>
                     $set('slug', Str::slug($state))
                 ),
 
@@ -61,13 +58,14 @@ class CategoryResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('thumbnail')->square(),
-
+                Tables\Columns\ImageColumn::make('thumbnail')
+                    ->disk('public')
+                    ->square(),
                 Tables\Columns\TextColumn::make('title')->searchable(),
-
                 Tables\Columns\TextColumn::make('creator.name')
                     ->label('Created By')
-                    ->formatStateUsing(fn ($record) =>
+                    ->formatStateUsing(
+                        fn($record) =>
                         $record->creator->name . '(' . $record->creator->id . ')'
                     ),
 
@@ -75,13 +73,13 @@ class CategoryResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
-                    ->visible(fn () => auth()->user()?->can('view_categories')),
+                    ->visible(fn() => auth()->user()?->can('view_categories')),
 
                 Tables\Actions\EditAction::make()
-                    ->visible(fn () => auth()->user()?->can('edit_categories')),
+                    ->visible(fn() => auth()->user()?->can('edit_categories')),
 
                 Tables\Actions\DeleteAction::make()
-                    ->visible(fn () => auth()->user()?->can('delete_categories')),
+                    ->visible(fn() => auth()->user()?->can('delete_categories')),
             ]);
     }
 
@@ -93,5 +91,6 @@ class CategoryResource extends Resource
             'edit' => Pages\EditCategory::route('/{record}/edit'),
         ];
     }
+
 
 }

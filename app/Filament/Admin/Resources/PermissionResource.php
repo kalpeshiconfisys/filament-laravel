@@ -19,7 +19,7 @@ class PermissionResource extends Resource
     protected static ?string $navigationGroup = 'User Management';
     protected static ?string $navigationLabel = 'Permisssion';
     protected static ?int $navigationSort = 3;
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-lock-closed';
 
 
 
