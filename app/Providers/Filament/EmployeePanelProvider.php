@@ -28,7 +28,7 @@ class EmployeePanelProvider extends PanelProvider
             ->login()
             ->default()
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Green,
             ])
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\\Filament\\Admin\\Resources')
             ->discoverPages(
