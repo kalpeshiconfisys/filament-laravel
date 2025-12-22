@@ -8,6 +8,10 @@ use App\Models\Permission;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Tables\Grouping\Group;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\DatePicker;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -36,44 +40,70 @@ class PermissionResource extends Resource
             ]);
     }
 
-    public static function table(Table $table): Table
-    {
-        return $table
-            ->columns([
-                Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('guard_name')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-            ])
-            ->filters([
-                //
-            ])
-             ->actions([
-                // 👁 View – permission based
-                Tables\Actions\ViewAction::make()
-                    ->visible(fn () => auth()->user()?->can('view_permissions') ?? false),
+   public static function table(Table $table): Table
+{
+    return $table
+        ->columns([
+            Tables\Columns\TextColumn::make('name')
+                ->sortable()
+                ->searchable(),
 
-                // ✏ Edit – permission based
-                Tables\Actions\EditAction::make()
-                    ->visible(fn () => auth()->user()?->can('edit_permissions') ?? false),
+            Tables\Columns\TextColumn::make('guard_name')
+                ->sortable()
+                ->searchable(),
 
-                // 🗑 Delete – permission + self delete block
-                Tables\Actions\DeleteAction::make()
-                    ->visible(fn ($record) =>
-                        auth()->user()?->can('delete_permissions')
+            Tables\Columns\TextColumn::make('created_at')
+                ->dateTime()
+                ->sortable()
+                ->toggleable(isToggledHiddenByDefault: true),
 
-                    ),
-                ]);
+            Tables\Columns\TextColumn::make('updated_at')
+                ->dateTime()
+                ->sortable()
+                ->toggleable(isToggledHiddenByDefault: true),
+        ])
 
-    }
+        ->defaultSort('name', 'asc')
+
+        ->groups([
+            Group::make('guard_name')
+                ->label('Guard Name')
+                ->collapsible(),
+        ])
+
+        ->filters([
+            SelectFilter::make('guard_name')
+                ->label('Guard')
+                ->options([
+                    'web' => 'Web',
+                    'api' => 'API',
+                ]),
+
+            Filter::make('created_at')
+                ->form([
+                    DatePicker::make('from'),
+                    DatePicker::make('until'),
+                ])
+                ->query(fn ($query, $data) =>
+                    $query
+                        ->when($data['from'], fn ($q) =>
+                            $q->whereDate('created_at', '>=', $data['from']))
+                        ->when($data['until'], fn ($q) =>
+                            $q->whereDate('created_at', '<=', $data['until']))
+                ),
+        ])
+
+        ->actions([
+            Tables\Actions\ViewAction::make()
+                ->visible(fn () => auth()->user()?->can('view_permissions') ?? false),
+
+            Tables\Actions\EditAction::make()
+                ->visible(fn () => auth()->user()?->can('edit_permissions') ?? false),
+
+            Tables\Actions\DeleteAction::make()
+                ->visible(fn () => auth()->user()?->can('delete_permissions')),
+        ]);
+}
 
     public static function getRelations(): array
     {
