@@ -6,6 +6,10 @@ use App\Filament\Admin\Resources\UserResource\Pages;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Tables\Grouping\Group;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\DatePicker;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -21,8 +25,7 @@ class UserResource extends Resource
 
     /**
      * ✅ ROLE BASED SIDEBAR
-    */
-
+     */
 
     /**
      * FORM
@@ -62,23 +65,39 @@ class UserResource extends Resource
                 Tables\Columns\IconColumn::make('is_active')->boolean(),
                 Tables\Columns\TextColumn::make('roles.name')->badge(),
             ])
+            ->defaultSort('name', 'asc')
+            ->filters([
+                Filter::make('created_at')
+                    ->form([
+                        DatePicker::make('from'),
+                        DatePicker::make('until'),
+                    ])
+                    ->query(
+                        fn($query, $data) =>
+                        $query
+                            ->when($data['from'], fn($q) =>
+                            $q->whereDate('created_at', '>=', $data['from']))
+                            ->when($data['until'], fn($q) =>
+                            $q->whereDate('created_at', '<=', $data['until']))
+                    ),
+            ])
             ->actions([
                 // 👁 View – permission based
                 Tables\Actions\ViewAction::make()
-                    ->visible(fn () => auth()->user()?->can('view_users') ?? false),
+                    ->visible(fn() => auth()->user()?->can('view_users') ?? false),
 
                 // ✏ Edit – permission based
                 Tables\Actions\EditAction::make()
-                    ->visible(fn () => auth()->user()?->can('edit_users') ?? false),
+                    ->visible(fn() => auth()->user()?->can('edit_users') ?? false),
 
                 // 🗑 Delete – permission + self delete block
                 Tables\Actions\DeleteAction::make()
-                    ->visible(fn ($record) =>
+                    ->visible(
+                        fn($record) =>
                         auth()->user()?->can('delete_users')
-                        && auth()->id() !== $record->id
+                            && auth()->id() !== $record->id
                     ),
-                ]);
-
+            ]);
     }
 
     public static function getRelations(): array

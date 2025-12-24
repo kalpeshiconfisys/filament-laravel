@@ -33,6 +33,7 @@ class CategoryResource extends Resource
                         $set('slug', Str::slug($state))
                 ),
 
+
             Forms\Components\TextInput::make('slug')
                 ->required()
                 ->unique(ignoreRecord: true),
@@ -54,7 +55,7 @@ class CategoryResource extends Resource
                 ->required(),
 
             Forms\Components\TextInput::make('canonical_url')
-                ->required(),
+                ->required(), 
 
             Forms\Components\TextInput::make('meta_title')
                 ->required(),
@@ -69,8 +70,8 @@ class CategoryResource extends Resource
         return $table
             ->columns([
 
-                // ✅ FIXED IMAGE COLUMN
-                Tables\Columns\ImageColumn::make('thumbnail')
+            // ✅ FIXED IMAGE COLUMN
+            Tables\Columns\ImageColumn::make('thumbnail')
                     ->label('Thumbnail')
                     ->disk('public')
                     ->visibility('public')
@@ -79,9 +80,6 @@ class CategoryResource extends Resource
 
                 Tables\Columns\TextColumn::make('title')
                     ->searchable(),
-
-                 
-
                 Tables\Columns\IconColumn::make('is_active')
                     ->boolean(),
             ])
@@ -105,4 +103,5 @@ class CategoryResource extends Resource
             'edit'   => Pages\EditCategory::route('/{record}/edit'),
         ];
     }
+
 }

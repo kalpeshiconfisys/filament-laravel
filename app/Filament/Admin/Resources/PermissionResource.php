@@ -25,8 +25,6 @@ class PermissionResource extends Resource
     protected static ?int $navigationSort = 3;
     protected static ?string $navigationIcon = 'heroicon-o-lock-closed';
 
-
-
     public static function form(Form $form): Form
     {
         return $form
@@ -40,70 +38,60 @@ class PermissionResource extends Resource
             ]);
     }
 
-   public static function table(Table $table): Table
-{
-    return $table
-        ->columns([
-            Tables\Columns\TextColumn::make('name')
-                ->sortable()
-                ->searchable(),
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                Tables\Columns\TextColumn::make('name')
+                    ->sortable()
+                    ->searchable(),
 
-            Tables\Columns\TextColumn::make('guard_name')
-                ->sortable()
-                ->searchable(),
+                Tables\Columns\TextColumn::make('guard_name')
+                    ->sortable()
+                    ->searchable(),
 
-            Tables\Columns\TextColumn::make('created_at')
-                ->dateTime()
-                ->sortable()
-                ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->defaultSort('name', 'asc')
+            ->groups([
+                Group::make('guard_name')
+                    ->label('Guard Name')
+                    ->collapsible(),
+            ])
+            ->filters([
+                SelectFilter::make('guard_name')
+                    ->label('Guard')
+                    ->options([
+                        'web' => 'Web',
+                        'api' => 'API',
+                    ]),
 
-            Tables\Columns\TextColumn::make('updated_at')
-                ->dateTime()
-                ->sortable()
-                ->toggleable(isToggledHiddenByDefault: true),
-        ])
+                Filter::make('created_at')
+                    ->form([
+                        DatePicker::make('from'),
+                        DatePicker::make('until'),
+                    ])
+                    ->query(fn ($query, $data) =>
+                        $query
+                            ->when($data['from'], fn ($q) =>
+                                $q->whereDate('created_at', '>=', $data['from']))
+                            ->when($data['until'], fn ($q) =>  $q->whereDate('created_at', '<=', $data['until']))
+                    ),
+            ])
+            ->actions([
+                Tables\Actions\ViewAction::make()
+                    ->visible(fn () => auth()->user()?->can('view_permissions') ?? false),
 
-        ->defaultSort('name', 'asc')
+                Tables\Actions\EditAction::make()
+                    ->visible(fn () => auth()->user()?->can('edit_permissions') ?? false),
 
-        ->groups([
-            Group::make('guard_name')
-                ->label('Guard Name')
-                ->collapsible(),
-        ])
-
-        ->filters([
-            SelectFilter::make('guard_name')
-                ->label('Guard')
-                ->options([
-                    'web' => 'Web',
-                    'api' => 'API',
-                ]),
-
-            Filter::make('created_at')
-                ->form([
-                    DatePicker::make('from'),
-                    DatePicker::make('until'),
-                ])
-                ->query(fn ($query, $data) =>
-                    $query
-                        ->when($data['from'], fn ($q) =>
-                            $q->whereDate('created_at', '>=', $data['from']))
-                        ->when($data['until'], fn ($q) =>
-                            $q->whereDate('created_at', '<=', $data['until']))
-                ),
-        ])
-
-        ->actions([
-            Tables\Actions\ViewAction::make()
-                ->visible(fn () => auth()->user()?->can('view_permissions') ?? false),
-
-            Tables\Actions\EditAction::make()
-                ->visible(fn () => auth()->user()?->can('edit_permissions') ?? false),
-
-            Tables\Actions\DeleteAction::make()
-                ->visible(fn () => auth()->user()?->can('delete_permissions')),
-        ]);
-}
+                Tables\Actions\DeleteAction::make()
+                    ->visible(fn () => auth()->user()?->can('delete_permissions')),
+            ]);
+    }
 
     public static function getRelations(): array
     {
@@ -122,4 +110,5 @@ class PermissionResource extends Resource
             'edit' => Pages\EditPermission::route('/{record}/edit'),
         ];
     }
+
 }
